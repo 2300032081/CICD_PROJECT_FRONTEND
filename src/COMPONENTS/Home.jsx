@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
+import Navbar from "./Navbar";
 import "./Home.css";
 
 function Home() {
   const [portfolio, setPortfolio] = useState(null);
   const userId = localStorage.getItem("userId");
   const username = localStorage.getItem("username");
+  const API_URL = "https://cicdprojectbackend-production.up.railway.app";
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:8081/api/portfolio/user/${userId}`
-        );
+        const response = await fetch(${API_URL}/api/portfolio/user/${userId});
         if (response.ok) {
           const data = await response.json();
           console.log("Portfolio API response:", data);
-
           if (data) {
             setPortfolio(data);
           }
@@ -37,7 +36,6 @@ function Home() {
     if (!links) return null;
 
     try {
-      // Try parsing as JSON first
       const parsed = JSON.parse(links);
       return Object.entries(parsed).map(([key, value]) => (
         <a
@@ -51,11 +49,9 @@ function Home() {
         </a>
       ));
     } catch (err) {
-      // Fallback for plain comma-separated URLs
       return links.split(",").map((link, idx) => {
         const trimmed = link.trim();
         let label = "Link";
-
         if (trimmed.includes("linkedin.com")) label = "LinkedIn";
         else if (trimmed.includes("github.com")) label = "GitHub";
 
@@ -76,34 +72,58 @@ function Home() {
 
   return (
     <div>
+      <Navbar />
       <div className="home-container">
-        <h1>Welcome, {username}!</h1>
+        <h1> {username}!</h1>
         <h2>Your Portfolio</h2>
+
         {portfolio ? (
           <div className="portfolio-card">
-            <img
-              src={
-                portfolio.imageUrl
-                  ? `http://localhost:8081${portfolio.imageUrl}`
-                  : "https://picsum.photos/150"
-              }
-              alt="Profile"
-              className="portfolio-image"
-              onError={(e) => {
-                e.target.src = "/default.jpg"; // fallback to local image
-              }}
-            />
+            {portfolio.imageUrl && (
+              <img
+                src={${API_URL}${portfolio.imageUrl}}
+                alt="Profile"
+                className="portfolio-image"
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/150";
+                }}
+              />
+            )}
+
             <h3>{portfolio.username}</h3>
-            <p>
-              <strong>Bio:</strong> {portfolio.bio}
-            </p>
-            <p>
-              <strong>Skills:</strong> {portfolio.skills}
-            </p>
-            <p>
-              <strong>Projects:</strong> {portfolio.projects}
-            </p>
+
+            {portfolio.bio && (
+              <p>
+                <strong>Bio:</strong> {portfolio.bio}
+              </p>
+            )}
+
+            {/* Skills */}
+            {portfolio.skills && (
+              <div className="skills-container">
+                {portfolio.skills.split(",").map((skill, idx) => (
+                  <div key={idx} className="skill-badge">
+                    {skill.trim()}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Projects */}
+            {portfolio.projects && (
+              <div className="projects-container">
+                <strong>Projects:</strong>
+                <ul>
+                  {portfolio.projects.split(",").map((project, idx) => (
+                    <li key={idx}>{project.trim()}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Social Links */}
             <div className="social-links">
+              <strong className="social-title">Social Links:</strong>
               {renderSocialLinks(portfolio.socialLinks)}
             </div>
           </div>
