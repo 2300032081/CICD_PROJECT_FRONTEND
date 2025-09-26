@@ -6,13 +6,15 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const API_URL = "https://cicdprojectbackend-production.up.railway.app"; // live backend URL
 
+  // ✅ Backend base URL
+  const API_URL = "https://cicdprojectbackend-production.up.railway.app";
+
+  // 🔑 Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Login API call
-      const response = await fetch(${API_URL}/api/auth/login, {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -20,37 +22,46 @@ function Login() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Login success:", data);
+
+        // Save username
         localStorage.setItem("username", data.username);
 
-        // Get user details
-        const userResponse = await fetch(${API_URL}/api/auth/user/${data.username});
+        // Fetch user details (by username → your backend must support this)
+        const userResponse = await fetch(
+          `${API_URL}/api/auth/user/${data.username}`
+        );
+
         if (userResponse.ok) {
           const userData = await userResponse.json();
           localStorage.setItem("userId", userData.id);
+          console.log("User details:", userData);
+        } else {
+          console.error("Failed to fetch user details");
         }
 
-        // Navigate to Home page
+        // Redirect to home
         navigate("/home");
       } else {
         alert("Invalid username or password");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Something went wrong");
+      alert("Something went wrong during login");
     }
   };
 
+  // 🔑 Handle Signup
   const handleSignup = async () => {
     try {
-      // Signup API call
-      const response = await fetch(${API_URL}/api/auth/signup, {
+      const response = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
-        alert("Account created successfully! You can now log in.");
+        alert("Account created successfully! Please log in.");
       } else {
         const errorData = await response.json();
         alert("Signup failed: " + (errorData.message || "Unknown error"));
@@ -63,12 +74,12 @@ function Login() {
 
   return (
     <div className="page-wrapper">
-      {/* Portfolio app in center */}
+      {/* App title */}
       <div className="portfolio-container">
         <h1>Portfolio App</h1>
       </div>
 
-      {/* Login inputs at top-right */}
+      {/* Login inputs */}
       <div className="login-top-right">
         <form onSubmit={handleLogin} className="login-inline-form">
           <input
@@ -86,9 +97,9 @@ function Login() {
             required
           />
           <button type="submit">Login</button>
-          {/* <button type="button" onClick={handleSignup}>
+          <button type="button" onClick={handleSignup}>
             Signup
-          </button> */}
+          </button>
         </form>
       </div>
     </div>
